@@ -1,16 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { NotesProvider } from "@/lib/contexts/NotesContext";
+import { NotebooksProvider } from "@/lib/contexts/NotebooksContext";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "InkNote AI",
@@ -24,10 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="overflow-hidden">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
-      >
-        {children}
+      <body className="font-sans antialiased overflow-hidden">
+        <NotebooksProvider>
+          <NotesProvider>{children}</NotesProvider>
+        </NotebooksProvider>
       </body>
     </html>
   );

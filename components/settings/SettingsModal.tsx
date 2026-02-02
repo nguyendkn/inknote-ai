@@ -105,7 +105,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl h-[85vh] max-h-[700px] bg-white rounded-2xl shadow-2xl flex overflow-hidden mx-4">
+      <div className="relative w-full max-w-4xl h-[85vh] max-h-175 bg-white rounded-2xl shadow-2xl flex overflow-hidden mx-4">
         {/* Left Sidebar - Tab Navigation */}
         <div className="w-56 bg-slate-50 border-r border-slate-200 flex flex-col shrink-0">
           {/* Header */}

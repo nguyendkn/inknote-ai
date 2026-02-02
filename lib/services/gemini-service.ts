@@ -1,21 +1,29 @@
-"use server";
-
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.GOOGLE_API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
-
+/**
+ * Generate note content using Gemini AI
+ * For Electron app, API key is stored in app config
+ */
 export async function generateNoteContent(
   prompt: string,
   currentContent: string,
   modelName: string = "gemini-2.0-flash",
+  apiKey?: string
 ): Promise<string> {
-  if (!apiKey) {
+  // Try to get API key from parameter, env, or window config
+  const key = apiKey ||
+    (typeof process !== 'undefined' ? process.env.GOOGLE_API_KEY : undefined) ||
+    (typeof window !== 'undefined' && (window as unknown as { __GEMINI_API_KEY__?: string }).__GEMINI_API_KEY__) ||
+    "";
+
+  if (!key) {
     console.warn("No API Key found for Gemini");
-    return "Error: API Key is missing. Please configure GOOGLE_API_KEY environment variable.";
+    return "Error: API Key is missing. Please configure your Gemini API key in Settings.";
   }
 
   try {
+    const ai = new GoogleGenAI({ apiKey: key });
+
     const fullPrompt = `
 You are an AI assistant in a Markdown note-taking app.
 
@@ -25,7 +33,7 @@ ${currentContent}
 User Request:
 ${prompt}
 
-Please provide the text that should be added or replace the selection. 
+Please provide the text that should be added or replace the selection.
 If the user asks to summarize, return a summary.
 If the user asks to continue writing, return the next paragraph.
 Return ONLY the markdown content, no extra conversational filler.

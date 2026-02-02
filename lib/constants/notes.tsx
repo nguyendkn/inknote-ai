@@ -4,6 +4,7 @@ export const MOCK_NOTES: Note[] = [
   {
     id: "1",
     title: "Create a new PouchDB adapter for op-sqlite",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
     updatedAt: new Date(Date.now() - 1000 * 60 * 32), // 32 minutes ago
     tags: ["Awesome SaaS: Mobile app", "Status", "React Native", "Database"],
     notebookId: "ideas",
@@ -37,6 +38,7 @@ quick-sqlite's [default locations](https://github.com/margelo/react-native-quick
   {
     id: "2",
     title: "Record a webpage with background transparency using Puppeteer",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
     updatedAt: new Date(Date.now() - 1000 * 60 * 31),
     tags: ["Dev"],
     notebookId: "desktop-app",
@@ -56,6 +58,7 @@ const browser = await puppeteer.launch({
   {
     id: "3",
     title: "Migrate ESLint YAML config to flat mjs config",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
     updatedAt: new Date(Date.now() - 1000 * 60 * 31),
     tags: ["Maintenance"],
     notebookId: "desktop-app",
@@ -72,6 +75,7 @@ Working on updating this repo to use the new flat config format.
   {
     id: "4",
     title: "Fluid animations with threejs",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4),
     updatedAt: new Date(Date.now() - 1000 * 60 * 31),
     tags: ["Experiment"],
     notebookId: "ideas",
@@ -88,6 +92,7 @@ Rain & Water Effect Experiments
   {
     id: "5",
     title: "Bump up deps of the web app",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
     updatedAt: new Date(Date.now() - 1000 * 60 * 33),
     tags: ["Maintenance"],
     notebookId: "website",
@@ -103,6 +108,7 @@ Bump up stripe From 14 to 17.4.0
   {
     id: "6",
     title: "Feature idea",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6),
     updatedAt: new Date(Date.now() - 1000 * 60 * 36),
     tags: ["Ideas"],
     notebookId: "ideas",
@@ -118,6 +124,7 @@ Editor hold to select interferes with gesture navigation.
   {
     id: "7",
     title: "Mermaid diagrams",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12),
     updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 11), // 11 days ago
     tags: ["Docs"],
     notebookId: "learn",

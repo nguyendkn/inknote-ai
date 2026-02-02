@@ -280,3 +280,50 @@ body {
   background: rgba(255, 255, 255, 0.1);
   color: white;
 }
+
+/* Executable Code Block Animations */
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    max-height: 400px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out forwards;
+}
+
+/* Code block hover effects */
+.code-block-hover:hover .run-button {
+  opacity: 1;
+}
+
+.run-button {
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+/* Output panel styles */
+.output-panel {
+  transition: all 0.2s ease-out;
+}
+
+.output-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.output-panel::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.output-panel::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+

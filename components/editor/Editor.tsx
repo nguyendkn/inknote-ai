@@ -6,20 +6,99 @@ import "@uiw/react-markdown-preview/markdown.css";
 import "@uiw/react-md-editor/markdown-editor.css";
 import { PenLine, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { ImageUploadModal } from "./ImageUploadModal";
+import { CodeBlockRenderer, PreBlockRenderer } from "./CodeBlockRenderer";
+import { TagEditor } from "@/components/notes/TagEditor";
+import { SaveIndicator } from "@/components/ui/SaveIndicator";
 
 // Dynamic import to avoid SSR issues
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
+// Import commands
+import * as commands from "@uiw/react-md-editor/commands";
+import type { ICommand, TextAreaTextApi } from "@uiw/react-md-editor/commands";
+
 interface EditorProps {
   note: Note | undefined;
   onUpdateNote: (updatedNote: Note) => void;
+  isSaving?: boolean;
+  lastSaved?: Date | null;
 }
 
-export function Editor({ note, onUpdateNote }: EditorProps) {
+export function Editor({
+  note,
+  onUpdateNote,
+  isSaving = false,
+  lastSaved = null,
+}: EditorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+
+  // Ref to store editor API for inserting content
+  const editorApiRef = useRef<TextAreaTextApi | null>(null);
+
+  // Handle tag changes
+  const handleTagsChange = useCallback(
+    (tags: string[]) => {
+      if (note) {
+        onUpdateNote({ ...note, tags, updatedAt: new Date() });
+      }
+    },
+    [note, onUpdateNote]
+  );
+
+  // Handle image insert from modal - receives file path instead of base64
+  const handleImageInsert = useCallback(
+    (imagePath: string, altText: string) => {
+      // Escape brackets in alt text for markdown
+      const safeAltText = altText.replace(/[[\]]/g, "");
+      const markdown = `![${safeAltText}](${imagePath})`;
+
+      if (editorApiRef.current) {
+        editorApiRef.current.replaceSelection(markdown);
+      } else if (note) {
+        // Fallback: append to content if API ref not available
+        onUpdateNote({
+          ...note,
+          content: note.content + "\n\n" + markdown,
+          updatedAt: new Date(),
+        });
+      }
+      setShowImageModal(false);
+    },
+    [note, onUpdateNote]
+  );
+
+  // Create custom image command
+  const customCommands = useMemo(() => {
+    const createCustomImageCommand = (): ICommand => ({
+      name: "image",
+      keyCommand: "image",
+      shortcuts: "ctrlcmd+k",
+      buttonProps: { "aria-label": "Insert image", title: "Insert image" },
+      icon: (
+        <svg width="13" height="13" viewBox="0 0 20 20">
+          <path
+            fill="currentColor"
+            d="M15 9c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4-7H1c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h18c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 13l-6-5-2 2-4-5-4 8V4h16v11z"
+          />
+        </svg>
+      ),
+      execute: (_state, api) => {
+        // Store API ref for later use
+        editorApiRef.current = api;
+        // Open custom modal instead of default behavior
+        setShowImageModal(true);
+      },
+    });
+
+    return {
+      customImage: createCustomImageCommand(),
+    };
+  }, []);
 
   if (!note) {
     return (
@@ -59,29 +138,24 @@ export function Editor({ note, onUpdateNote }: EditorProps) {
     <div className="flex-1 flex flex-col h-full bg-white font-sans min-w-0">
       {/* Note Header */}
       <div className="px-4 md:px-6 pt-4 pb-3 border-b border-slate-100 shrink-0">
-        {/* Title Input */}
-        <input
-          type="text"
-          value={note.title}
-          onChange={(e) => onUpdateNote({ ...note, title: e.target.value })}
-          className="text-xl md:text-2xl font-bold text-slate-900 w-full outline-none placeholder-slate-300 bg-transparent mb-3 focus:placeholder-slate-400 transition-colors"
-          placeholder="Note Title"
-        />
+        {/* Title + Save Status Row */}
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <input
+            type="text"
+            value={note.title}
+            onChange={(e) =>
+              onUpdateNote({ ...note, title: e.target.value, updatedAt: new Date() })
+            }
+            className="text-xl md:text-2xl font-bold text-slate-900 flex-1 outline-none placeholder-slate-300 bg-transparent focus:placeholder-slate-400 transition-colors"
+            placeholder="Note Title"
+          />
+          <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
+        </div>
 
         {/* Tags + AI Button Row */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2 flex-1">
-            {note.tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors duration-200"
-              >
-                {tag}
-              </span>
-            ))}
-            <button className="text-xs text-slate-400 hover:text-blue-500 px-2 py-1 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer font-medium">
-              + Add tag
-            </button>
+          <div className="flex-1">
+            <TagEditor tags={note.tags} onChange={handleTagsChange} />
           </div>
 
           {/* AI Button */}
@@ -115,8 +189,40 @@ export function Editor({ note, onUpdateNote }: EditorProps) {
           style={{
             height: "100%",
           }}
+          previewOptions={{
+            components: {
+              code: CodeBlockRenderer,
+              pre: PreBlockRenderer,
+            },
+          }}
+          commands={[
+            // Use built-in commands but override image
+            commands.bold,
+            commands.italic,
+            commands.strikethrough,
+            commands.hr,
+            commands.title,
+            commands.divider,
+            commands.link,
+            customCommands.customImage,
+            commands.quote,
+            commands.code,
+            commands.codeBlock,
+            commands.divider,
+            commands.unorderedListCommand,
+            commands.orderedListCommand,
+            commands.checkedListCommand,
+          ]}
         />
       </div>
+
+      {/* Image Upload Modal */}
+      <ImageUploadModal
+        isOpen={showImageModal}
+        noteId={note.id}
+        onClose={() => setShowImageModal(false)}
+        onInsert={handleImageInsert}
+      />
 
       {/* AI Modal */}
       {showAiModal && (

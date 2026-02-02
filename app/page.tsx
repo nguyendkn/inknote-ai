@@ -5,26 +5,68 @@ import { NoteList } from "@/components/layout/NoteList";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 import { UpdateNotification } from "@/components/ui/UpdateNotification";
-import { MOCK_NOTEBOOKS } from "@/lib/constants/notebooks";
-import { MOCK_NOTES } from "@/lib/constants/notes";
-import { Note } from "@/types/note";
+import { useNotes } from "@/lib/contexts/NotesContext";
+import { useAutoSave } from "@/lib/hooks/useAutoSave";
 import { ChevronLeft, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 
 export default function Home() {
-  const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(
-    "ideas",
+  const {
+    notes,
+    filteredNotes,
+    selectedNote,
+    selectedNoteId,
+    selectedNotebookId,
+    isLoading,
+    isSaving,
+    lastSaved,
+    selectNote,
+    selectNotebook,
+    updateNote,
+  } = useNotes();
+
+  // Calculate counts for sidebar
+  const notesCount = notes.length;
+  const pinnedCount = useMemo(
+    () => notes.filter((n) => n.isPinned).length,
+    [notes]
   );
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(
-    MOCK_NOTES[0].id,
-  );
-  const [notes, setNotes] = useState<Note[]>(MOCK_NOTES);
 
   // Responsive state
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [noteListOpen, setNoteListOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Local note state for editing (debounced save)
+  // Use React's recommended pattern: adjust state during render
+  const [localNote, setLocalNote] = useState(selectedNote);
+  const [prevNoteId, setPrevNoteId] = useState(selectedNoteId);
+
+  // Sync local note when selected note changes (during render, not in effect)
+  if (selectedNoteId !== prevNoteId) {
+    setPrevNoteId(selectedNoteId);
+    setLocalNote(selectedNote);
+  }
+
+  // Auto-save handler
+  const handleAutoSave = useCallback(
+    async (note: typeof localNote) => {
+      if (note && selectedNoteId) {
+        await updateNote(selectedNoteId, {
+          title: note.title,
+          content: note.content,
+          tags: note.tags,
+          notebookId: note.notebookId,
+          isPinned: note.isPinned,
+        });
+      }
+    },
+    [selectedNoteId, updateNote]
+  );
+
+  // Auto-save with 10 second interval (from config)
+  const { forceSave } = useAutoSave(localNote, handleAutoSave, 10000, !!localNote);
 
   // Handle window resize
   useEffect(() => {
@@ -45,29 +87,45 @@ export default function Home() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const selectedNote = notes.find((n) => n.id === selectedNoteId);
+  const handleSelectNote = useCallback(
+    async (id: string) => {
+      // Force save current note before switching
+      await forceSave();
+      selectNote(id);
+      // On mobile, close note list and show editor when selecting a note
+      if (isMobile) {
+        setNoteListOpen(false);
+      }
+    },
+    [selectNote, isMobile, forceSave]
+  );
 
-  const handleUpdateNote = (updatedNote: Note) => {
-    setNotes((prevNotes) =>
-      prevNotes.map((n) => (n.id === updatedNote.id ? updatedNote : n)),
+  const handleSelectNotebook = useCallback(
+    (id: string | null) => {
+      selectNotebook(id);
+      if (isMobile) setSidebarOpen(false);
+    },
+    [selectNotebook, isMobile]
+  );
+
+  const handleUpdateLocalNote = useCallback(
+    (updatedNote: typeof localNote) => {
+      setLocalNote(updatedNote);
+    },
+    []
+  );
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-500 text-sm">Loading notes...</p>
+        </div>
+      </div>
     );
-  };
-
-  const handleSelectNote = (id: string) => {
-    setSelectedNoteId(id);
-    // On mobile, close note list and show editor when selecting a note
-    if (isMobile) {
-      setNoteListOpen(false);
-    }
-  };
-
-  const filteredNotes =
-    selectedNotebookId === "all"
-      ? notes
-      : notes.filter((n) => {
-          if (!selectedNotebookId) return true;
-          return n.notebookId === selectedNotebookId;
-        });
+  }
 
   return (
     <div className="flex flex-row h-screen w-screen overflow-hidden bg-white relative">
@@ -113,13 +171,11 @@ export default function Home() {
       `}
       >
         <Sidebar
-          notebooks={MOCK_NOTEBOOKS}
           selectedNotebookId={selectedNotebookId}
-          onSelectNotebook={(id) => {
-            setSelectedNotebookId(id);
-            if (isMobile) setSidebarOpen(false);
-          }}
+          onSelectNotebook={handleSelectNotebook}
           onOpenSettings={() => setSettingsOpen(true)}
+          notesCount={notesCount}
+          pinnedCount={pinnedCount}
         />
       </div>
 
@@ -132,6 +188,7 @@ export default function Home() {
         <NoteList
           notes={filteredNotes}
           selectedNoteId={selectedNoteId}
+          selectedNotebookId={selectedNotebookId}
           onSelectNote={handleSelectNote}
           onToggleSidebar={isMobile ? () => setSidebarOpen(true) : undefined}
         />
@@ -144,7 +201,12 @@ export default function Home() {
         ${isMobile && noteListOpen ? "hidden" : "flex"}
       `}
       >
-        <Editor note={selectedNote} onUpdateNote={handleUpdateNote} />
+        <Editor
+          note={localNote}
+          onUpdateNote={handleUpdateLocalNote}
+          isSaving={isSaving}
+          lastSaved={lastSaved}
+        />
       </div>
 
       {/* Update Notification */}
