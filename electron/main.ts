@@ -1,5 +1,11 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+import {
+  checkForUpdates,
+  getUpdateState,
+  quitAndInstall,
+  setupAutoUpdater,
+} from "./updater";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -34,6 +40,9 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(path.join(__dirname, "../out/index.html"));
   }
+
+  // Setup auto-updater after window is created
+  setupAutoUpdater(mainWindow);
 }
 
 // IPC Handlers
@@ -63,6 +72,20 @@ ipcMain.handle("system:get-info", async () => {
       used: usedMemory,
     },
   };
+});
+
+// Updater IPC Handlers
+ipcMain.handle("updater:check", async () => {
+  await checkForUpdates();
+  return getUpdateState();
+});
+
+ipcMain.handle("updater:install", () => {
+  quitAndInstall();
+});
+
+ipcMain.handle("updater:status", () => {
+  return getUpdateState();
 });
 
 app.whenReady().then(() => {

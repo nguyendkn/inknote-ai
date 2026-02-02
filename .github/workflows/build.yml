@@ -79,6 +79,7 @@ jobs:
             release/*.dmg
             release/*.AppImage
             release/*.deb
+            release/*.yml
           if-no-files-found: ignore
 
   release:
@@ -102,6 +103,7 @@ jobs:
             artifacts/**/*.exe
             artifacts/**/*.dmg
             artifacts/**/*.AppImage
+            artifacts/**/*.yml
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}

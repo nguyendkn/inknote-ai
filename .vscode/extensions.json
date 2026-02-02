@@ -1,0 +1,29 @@
+{
+  "recommendations": [
+    // Core
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+
+    // TypeScript & JavaScript
+    "ms-vscode.vscode-typescript-next",
+
+    // React & Next.js
+    "dsznajder.es7-react-js-snippets",
+    "formulahendry.auto-rename-tag",
+    "formulahendry.auto-close-tag",
+
+    // Tailwind CSS
+    "bradlc.vscode-tailwindcss",
+
+    // Electron
+    "nickmw.electron-snippets",
+
+    // Utilities
+    "christian-kohler.path-intellisense",
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "gruntfuggly.todo-tree"
+  ]
+}

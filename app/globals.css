@@ -99,3 +99,123 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Update notification styles */
+.update-notification-wrapper {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+}
+
+.update-notification {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #1f2937;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: #f9fafb;
+  font-size: 14px;
+  max-width: 400px;
+}
+
+.update-notification .icon {
+  flex-shrink: 0;
+}
+
+.update-notification .icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.update-notification.checking {
+  background: #374151;
+}
+
+.update-notification.available,
+.update-notification.downloading {
+  background: #1e40af;
+}
+
+.update-notification.ready {
+  background: #065f46;
+}
+
+.update-notification.error {
+  background: #991b1b;
+}
+
+.update-notification .download-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.update-notification .progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.update-notification .progress-fill {
+  height: 100%;
+  background: #60a5fa;
+  transition: width 0.3s ease;
+}
+
+.update-notification .percent {
+  font-size: 12px;
+  opacity: 0.8;
+  min-width: 32px;
+}
+
+.update-notification .install-btn,
+.update-notification .retry-btn {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.update-notification .install-btn:hover,
+.update-notification .retry-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.update-notification .dismiss-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 4px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.update-notification .dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}

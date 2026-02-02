@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { NoteList } from "@/components/layout/NoteList";
 import { Editor } from "@/components/editor/Editor";
-import { Note } from "@/types/note";
+import { NoteList } from "@/components/layout/NoteList";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { UpdateNotification } from "@/components/ui/UpdateNotification";
 import { MOCK_NOTEBOOKS } from "@/lib/constants/notebooks";
 import { MOCK_NOTES } from "@/lib/constants/notes";
+import { Note } from "@/types/note";
+import { useState } from "react";
 
 export default function Home() {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(
@@ -51,6 +52,9 @@ export default function Home() {
 
       {/* Right Editor */}
       <Editor note={selectedNote} onUpdateNote={handleUpdateNote} />
+
+      {/* Update Notification */}
+      <UpdateNotification />
     </div>
   );
 }
