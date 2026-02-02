@@ -12,11 +12,16 @@ const isDev = process.env.NODE_ENV === "development";
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): void {
+  // Get package info for title
+  const appName = app.getName();
+  const version = app.getVersion();
+
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1500,
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    title: `${appName} v${version}`,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

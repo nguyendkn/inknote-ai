@@ -2,60 +2,24 @@
 
 import { generateNoteContent } from "@/lib/services/gemini-service";
 import { Note } from "@/types/note";
-import {
-  Bold,
-  Code,
-  Eye,
-  Heading1,
-  Heading2,
-  Image as ImageIcon,
-  Italic,
-  Link as LinkIcon,
-  List,
-  ListOrdered,
-  PenLine,
-  Quote,
-  Sparkles,
-  Strikethrough,
-} from "lucide-react";
+import "@uiw/react-markdown-preview/markdown.css";
+import "@uiw/react-md-editor/markdown-editor.css";
+import { PenLine, Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
+
+// Dynamic import to avoid SSR issues
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface EditorProps {
   note: Note | undefined;
   onUpdateNote: (updatedNote: Note) => void;
 }
 
-// Toolbar button component - defined outside Editor to avoid recreation on each render
-const ToolbarButton = ({
-  icon: Icon,
-  title,
-  active = false,
-}: {
-  icon: React.ElementType;
-  title: string;
-  active?: boolean;
-}) => (
-  <button
-    className={`
-      p-2 rounded-lg transition-all duration-150 cursor-pointer
-      ${
-        active
-          ? "bg-blue-50 text-blue-600"
-          : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-      }
-    `}
-    title={title}
-  >
-    <Icon size={16} />
-  </button>
-);
-
 export function Editor({ note, onUpdateNote }: EditorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [showAiModal, setShowAiModal] = useState(false);
-  const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
 
   if (!note) {
     return (
@@ -93,103 +57,65 @@ export function Editor({ note, onUpdateNote }: EditorProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white font-sans min-w-0">
-      {/* Note Header / Meta */}
-      <div className="px-8 pt-6 pb-2 border-b border-slate-100">
+      {/* Note Header */}
+      <div className="px-4 md:px-6 pt-4 pb-3 border-b border-slate-100 shrink-0">
         {/* Title Input */}
         <input
           type="text"
           value={note.title}
           onChange={(e) => onUpdateNote({ ...note, title: e.target.value })}
-          className="text-3xl font-bold text-slate-900 w-full outline-none placeholder-slate-300 bg-transparent mb-4 focus:placeholder-slate-400 transition-colors"
+          className="text-xl md:text-2xl font-bold text-slate-900 w-full outline-none placeholder-slate-300 bg-transparent mb-3 focus:placeholder-slate-400 transition-colors"
           placeholder="Note Title"
         />
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {note.tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors duration-200"
-            >
-              {tag}
-            </span>
-          ))}
-          <button className="text-xs text-slate-400 hover:text-blue-500 px-2 py-1 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer font-medium">
-            + Add tag
+        {/* Tags + AI Button Row */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2 flex-1">
+            {note.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors duration-200"
+              >
+                {tag}
+              </span>
+            ))}
+            <button className="text-xs text-slate-400 hover:text-blue-500 px-2 py-1 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer font-medium">
+              + Add tag
+            </button>
+          </div>
+
+          {/* AI Button */}
+          <button
+            onClick={() => setShowAiModal(true)}
+            className="flex items-center gap-1.5 text-xs font-medium text-white bg-linear-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer shadow-lg shadow-purple-500/20 shrink-0"
+          >
+            <Sparkles size={14} />
+            <span>AI Assist</span>
           </button>
-        </div>
-
-        {/* Toolbar */}
-        <div className="flex items-center justify-between pb-3">
-          <div className="flex items-center gap-0.5">
-            <ToolbarButton icon={Bold} title="Bold" />
-            <ToolbarButton icon={Italic} title="Italic" />
-            <ToolbarButton icon={Strikethrough} title="Strikethrough" />
-
-            <div className="w-px h-5 bg-slate-200 mx-2"></div>
-
-            <ToolbarButton icon={Heading1} title="Heading 1" />
-            <ToolbarButton icon={Heading2} title="Heading 2" />
-
-            <div className="w-px h-5 bg-slate-200 mx-2"></div>
-
-            <ToolbarButton icon={LinkIcon} title="Link" />
-            <ToolbarButton icon={List} title="List" />
-            <ToolbarButton icon={ListOrdered} title="Ordered List" />
-
-            <div className="w-px h-5 bg-slate-200 mx-2"></div>
-
-            <ToolbarButton icon={Quote} title="Quote" />
-            <ToolbarButton icon={Code} title="Code" />
-            <ToolbarButton icon={ImageIcon} title="Image" />
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* View Mode Toggle */}
-            <button
-              onClick={() =>
-                setViewMode(viewMode === "edit" ? "preview" : "edit")
-              }
-              className={`
-                flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg
-                transition-all duration-200 cursor-pointer
-                ${
-                  viewMode === "preview"
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }
-              `}
-            >
-              {viewMode === "edit" ? <Eye size={14} /> : <PenLine size={14} />}
-              <span>{viewMode === "edit" ? "Preview" : "Edit"}</span>
-            </button>
-
-            {/* AI Button */}
-            <button
-              onClick={() => setShowAiModal(true)}
-              className="flex items-center gap-1.5 text-xs font-medium text-white bg-linear-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer shadow-lg shadow-purple-500/20"
-            >
-              <Sparkles size={14} />
-              <span>AI Assist</span>
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Editor Body */}
-      <div className="flex-1 overflow-y-auto px-8 py-6 relative">
-        {viewMode === "edit" ? (
-          <textarea
-            className="w-full h-full resize-none outline-none text-slate-800 font-mono text-sm leading-relaxed placeholder-slate-300"
-            value={note.content}
-            onChange={(e) => onUpdateNote({ ...note, content: e.target.value })}
-            placeholder="Start writing..."
-          />
-        ) : (
-          <div className="prose prose-slate prose-sm max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-blue-600 prose-code:text-pink-600 prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-slate-50 prose-pre:border prose-pre:border-slate-200 prose-pre:text-slate-800 font-sans">
-            <ReactMarkdown>{note.content}</ReactMarkdown>
-          </div>
-        )}
+      {/* Markdown Editor */}
+      <div className="flex-1 overflow-hidden" data-color-mode="light">
+        <MDEditor
+          value={note.content}
+          onChange={(value) =>
+            onUpdateNote({
+              ...note,
+              content: value || "",
+              updatedAt: new Date(),
+            })
+          }
+          height="100%"
+          preview="live"
+          hideToolbar={false}
+          enableScroll={true}
+          visibleDragbar={false}
+          className="border-none! shadow-none!"
+          style={{
+            height: "100%",
+          }}
+        />
       </div>
 
       {/* AI Modal */}

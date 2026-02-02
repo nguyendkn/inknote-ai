@@ -9,6 +9,7 @@ import {
   Folder,
   Pin,
   Plus,
+  Settings,
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
@@ -17,12 +18,14 @@ interface SidebarProps {
   notebooks: Notebook[];
   selectedNotebookId: string | null;
   onSelectNotebook: (id: string) => void;
+  onOpenSettings?: () => void;
 }
 
 export function Sidebar({
   notebooks,
   selectedNotebookId,
   onSelectNotebook,
+  onOpenSettings,
 }: SidebarProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     "awesome-saas": true,
@@ -176,8 +179,15 @@ export function Sidebar({
 
       {/* User Profile */}
       <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/50">
-        <div className="flex items-center cursor-pointer group">
-          <div className="w-9 h-9 rounded-full bg-linear-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold mr-3 shadow-lg shadow-purple-500/20 ring-2 ring-zinc-800 group-hover:ring-zinc-700 transition-all duration-200">
+        <div
+          className="flex items-center cursor-pointer group"
+          onClick={onOpenSettings}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && onOpenSettings?.()}
+          aria-label="Open settings"
+        >
+          <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-semibold mr-3 shadow-lg ring-2 ring-zinc-800 group-hover:ring-zinc-700 transition-all duration-200">
             D
           </div>
           <div className="flex-1 min-w-0">
@@ -185,6 +195,9 @@ export function Sidebar({
               Dao Khoi Nguyen
             </span>
             <span className="text-xs text-zinc-500">Pro Plan</span>
+          </div>
+          <div className="p-1.5 rounded-lg text-zinc-500 group-hover:text-zinc-300 group-hover:bg-zinc-800 transition-all duration-150">
+            <Settings size={16} />
           </div>
         </div>
       </div>

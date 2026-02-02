@@ -7,12 +7,14 @@ interface NoteListProps {
   notes: Note[];
   selectedNoteId: string | null;
   onSelectNote: (id: string) => void;
+  onToggleSidebar?: () => void;
 }
 
 export function NoteList({
   notes,
   selectedNoteId,
   onSelectNote,
+  onToggleSidebar,
 }: NoteListProps) {
   const formatDate = (date: Date) => {
     const diff = (new Date().getTime() - date.getTime()) / 1000 / 60; // minutes
@@ -23,14 +25,18 @@ export function NoteList({
   };
 
   return (
-    <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col h-full font-sans">
+    <div className="w-full md:w-80 bg-slate-50 border-r border-slate-200 flex flex-col h-full font-sans">
       {/* Header */}
       <div className="h-14 flex items-center justify-between px-4 border-b border-slate-200 bg-white/80 backdrop-blur-sm shrink-0">
         <div className="flex items-center text-slate-900">
-          <Menu
-            size={18}
-            className="mr-3 text-slate-400 md:hidden cursor-pointer hover:text-slate-600 transition-colors"
-          />
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="mr-3 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <Menu size={18} />
+            </button>
+          )}
           <span className="text-base font-semibold">Notes</span>
           <span className="ml-2 text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
             {notes.length}
