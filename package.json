@@ -36,7 +36,7 @@
     "win": {
       "target": [
         "nsis",
-        "dir"
+        "portable"
       ],
       "icon": "public/icon.ico",
       "signAndEditExecutable": false
