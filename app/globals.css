@@ -1,6 +1,59 @@
 @import "tailwindcss";
 
 :root {
+  /* Design System Colors */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-secondary: #60a5fa;
+  --color-cta: #f97316;
+  --color-cta-hover: #ea580c;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+
+  /* Sidebar Colors */
+  --color-sidebar: #18181b;
+  --color-sidebar-hover: #27272a;
+  --color-sidebar-active: #3f3f46;
+  --color-sidebar-text: #a1a1aa;
+  --color-sidebar-text-active: #fafafa;
+
+  /* Accent */
+  --color-accent: #3b82f6;
+  --color-accent-glow: rgba(59, 130, 246, 0.25);
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,9 +65,9 @@
   --font-mono: var(--font-geist-mono);
 
   /* Custom colors for sidebar */
-  --color-sidebar: #202023;
-  --color-sidebar-hover: #2c2c30;
-  --color-sidebar-active: #36363b;
+  --color-sidebar: #18181b;
+  --color-sidebar-hover: #27272a;
+  --color-sidebar-active: #3f3f46;
   --color-accent: #3b82f6;
 }
 
@@ -29,6 +82,14 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Inter", Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus ring for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Custom scrollbar for a native app feel */
